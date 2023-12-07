@@ -1,0 +1,156 @@
+// Snake Game (Final Project) written by Ian Lochridge 05/15/2023)
+var snakeX = 0;
+var snakeY = 0;
+var userinputX = 0;
+var userinputY = 0;
+var score = 0;
+var snakeLength = 3;
+var gameSpeed = 100
+var coords = [];
+storeCoordinate(0, 0, coords);
+coords[0].x == 3   
+coords[0].y == 5   
+let applePositionX = 0;
+let applePositionY = 0;
+let intervalID = setInterval(gameLoop, gameSpeed); //game loop speed.
+var lastKeyPressed = null; 
+
+
+//Initialize Functions------------------------------------------
+appleCoords();
+board();
+console.log("Snake can be moved by using the arrow keys."); //game directions
+console.log("Any other key pressed will end the game.");
+console.log("Collect apples, avoid yourself, and the walls to survive.");
+
+//Define Event Listener for Key Inputs--------------------------
+document.addEventListener('keydown', (e) => {
+    e=e || window.event;
+    if (lastKeyPressed == null || lastKeyPressed != e.keyCode + 2 && lastKeyPressed != e.keyCode - 2) {
+        userinputX = 0 //reset movement keys
+        userinputY= 0 
+        if (e.keyCode == 37){  
+            userinputX = userinputX -20 //left
+        } else if (e.keyCode == 38){
+            userinputY = userinputY -20//up
+        } else if (e.keyCode == 39){
+            userinputX = userinputX +20 //right
+        } else if (e.keyCode ==  40){
+            userinputY = userinputY + 20 //down
+        } else {
+        gameComplete();
+        }
+        lastKeyPressed = e.keyCode;
+    }   
+});
+
+//Draw the playing board background + define rows & columns-----
+function board(){
+let gridX = 0;
+    for(var n = 0; n <20; n++){
+        let gridY = 0;
+        for(var i = 0; i<24; i++){
+            var rect= new Rectangle(20,20);
+            rect.setPosition(gridX,gridY); 
+            rect.setColor(Color.black);
+            add(rect);
+            gridY += 20
+        }
+        gridX += 20
+    }
+}
+
+//Randomly generate coordinates for apple------------------------
+function appleCoords(){
+    applePositionX = (Randomizer.nextInt(2,19)) * 20;
+    applePositionY = (Randomizer.nextInt(2,23)) *20;
+    for (let i = 0; i <= coords.length-1; i++) {
+        if (applePositionX === coords[i].x && applePositionY === coords[i].y){
+           appleCoords();
+        }
+    }
+}      
+        
+//Draw the apple based on coordinates given----------------------    
+function createApple(){
+    var apple = new Rectangle(20,20);
+    apple.setPosition(applePositionX, applePositionY);
+    apple.setColor(Color.red);
+    add(apple);
+}
+    
+//Check for collisions + end game--------------------------------
+function check(){
+    if ((snakeX <= -20 || snakeX >= 400) || (snakeY <= -20 || snakeY >= 480)){
+        gameComplete();
+} // Checks if the snake has crossed itself.
+    if(snakeLength >= coords.length && snakeLength >= 4){ 
+        for (let i = 1; i <= coords.length-1; i++) {
+            if (coords[0].x === coords[i].x && coords[0].y === coords[i].y) {
+            gameComplete();
+            }
+        }
+    }
+}
+     
+//Main game loop that runs every 0.10 seconds----------------------       
+function gameLoop(){
+    createApple(); 
+    createSnake();
+    deleteSnake();
+    check(); 
+}
+
+//Draws that snake on the canvas and checks for apple eaten--------
+function createSnake(){
+    let darkGreen = new Color(1,52,37);
+    var snakeOutline = new Rectangle(20,20);
+    snakeOutline.setPosition(snakeX, snakeY);
+    snakeOutline.setColor(darkGreen);
+    add(snakeOutline);
+    var snake = new Rectangle(17,17);
+    snake.setPosition(snakeX, snakeY);
+    snake.setColor(Color.green);
+    add(snake);
+    snakeX = snakeX + userinputX //calc position
+    snakeY = snakeY + userinputY
+    storeCoordinate(snakeX, snakeY, coords);
+    if (snakeX === applePositionX && snakeY === applePositionY){ 
+        score++  //add to score
+        snakeLength++ //add to the snake
+        appleCoords(); // redo coords
+    } 
+}
+
+
+function deleteSnake(){
+    if(snakeLength <= coords.length-1){
+        var delx = coords[0].x;
+        var dely = coords[0].y;
+        var delrect = new Rectangle(20,20);
+        delrect.setColor(Color.black);
+        delrect.setPosition(delx, dely);
+        add(delrect);
+        coords.shift(); 
+    }
+}
+
+function storeCoordinate(xVal, yVal, array) {
+    array.push({x: xVal, y: yVal});
+}
+
+function gameComplete(){
+    clearInterval(intervalID); //end game loop
+    setTimeout(function(){
+      var gameOver = new Rectangle(400,480); //draw white rectangle endscreen
+    gameOver.setPosition(0,0);
+    gameOver.setColor(Color.white);
+    add(gameOver);
+    var gameoverTxt = new Text("GAME OVER", "25pt Arial"); //Ending text
+    gameoverTxt.setPosition(100, 200);
+    add(gameoverTxt);
+    var scoreTxt = new Text("YOUR SCORE: " + score , "10pt Arial"); //Ending text
+    scoreTxt.setPosition(150,230);
+    add(scoreTxt);
+    }, 150);
+}
