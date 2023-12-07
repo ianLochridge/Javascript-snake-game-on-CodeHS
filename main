@@ -1,4 +1,4 @@
-// Snake Game (Final Project) written by Ian Lochridge 05/15/2023)
+// Snake Game written by Ian Lochridge 05/15/2023)
 var snakeX = 0;
 var snakeY = 0;
 var userinputX = 0;
